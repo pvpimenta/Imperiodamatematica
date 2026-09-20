@@ -5,32 +5,54 @@
     <title>Painel do Professor - Império Matemático</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background: #1e3c72; color: white; text-align: center; padding: 50px; }
-        .painel { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; margin: 0 auto; max-width: 600px; }
-        button { background: #FFD700; border: none; padding: 20px; font-size: 24px; border-radius: 10px; font-family: 'Fredoka One'; cursor: pointer; color: #333; margin-top: 20px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        button:hover { background: #FFEA70; }
-        #desafioAtual { margin-top: 20px; font-size: 20px; background: #333; padding: 15px; border-radius: 10px; display: none;}
+        body { font-family: 'Poppins', sans-serif; background: #1e3c72; color: white; text-align: center; padding: 20px; }
+        .caixa { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; margin: 20px auto; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; text-align: center; margin-bottom: 15px; width: 80%;}
+        .btn-acao { background: #FFD700; border: none; padding: 15px; font-size: 20px; border-radius: 10px; font-family: 'Fredoka One'; cursor: pointer; color: #333; width: 85%; }
+        .btn-acao:hover { background: #FFEA70; }
+        
+        #telaControle, #desafioAtual { display: none; }
+        
+        /* Estilos da lista de alunos */
+        ul { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px;}
+        li { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
+        .btn-expulsar { background: #FF416C; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .btn-expulsar:hover { background: #ff1a4d; }
     </style>
 </head>
 <body>
-    <div class="painel">
+    
+    <!-- TELA DE SENHA DO PROFESSOR -->
+    <div class="caixa" id="telaLogin">
+        <h1>🔒 Área Restrita</h1>
+        <p>Acesso exclusivo do professor</p>
+        <input type="password" id="senhaProf" placeholder="Digite a senha">
+        <br>
+        <button class="btn-acao" id="btnEntrarProf">ACESSAR PAINEL</button>
+    </div>
+
+    <!-- TELA DE CONTROLE DO JOGO -->
+    <div class="caixa" id="telaControle">
         <h1>👨‍🏫 Controle do Jogo</h1>
-        <p>Clique abaixo para disparar um problema de Matemática para todos os alunos!</p>
         
-        <button id="btnLancarDesafio">LANÇAR DESAFIO!</button>
+        <button class="btn-acao" id="btnLancarDesafio" style="background: #4CAF50; color: white;">🚀 LANÇAR DESAFIO!</button>
         
-        <div id="desafioAtual">
+        <div id="desafioAtual" style="margin-top: 15px; background: #333; padding: 15px; border-radius: 10px;">
             <h3 id="textoPergunta"></h3>
-            <p style="color: #4CAF50;">Resposta correta: <b id="textoResposta"></b></p>
-            <p>Recompensa: $ <span id="textoRecompensa"></span></p>
+            <p style="color: #4CAF50;">Resposta: <b id="textoResposta"></b> (Prêmio: $ <span id="textoRecompensa"></span>)</p>
         </div>
+
+        <h3 style="margin-top: 30px;">Gerenciar Alunos (Sala de Espera)</h3>
+        <ul id="listaAlunosProf">
+            <!-- Alunos aparecerão aqui -->
+        </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // SUA CONFIGURAÇÃO DO FIREBASE (já coloquei a sua aqui)
         const firebaseConfig = {
             apiKey: "AIzaSyAlwxaIIxETYSBGTtH1q6HMvXA62Cx9OLg",
             authDomain: "imperiomatematico-8b227.firebaseapp.com",
@@ -43,59 +65,73 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // O MOTOR DE MATEMÁTICA
+        // 1. SISTEMA DE LOGIN DO PROFESSOR (Senha padrão: profe123)
+        const SENHA_CORRETA = "profe123"; 
+
+        document.getElementById('btnEntrarProf').addEventListener('click', () => {
+            const senhaDigitada = document.getElementById('senhaProf').value;
+            if(senhaDigitada === SENHA_CORRETA) {
+                document.getElementById('telaLogin').style.display = 'none';
+                document.getElementById('telaControle').style.display = 'block';
+            } else {
+                alert("Senha incorreta!");
+            }
+        });
+
+        // 2. LISTAR E EXPULSAR ALUNOS
+        onValue(ref(db, 'jogadores'), (snapshot) => {
+            const lista = document.getElementById('listaAlunosProf');
+            lista.innerHTML = '';
+            
+            snapshot.forEach((childSnapshot) => {
+                const id = childSnapshot.key;
+                const dados = childSnapshot.val();
+                
+                // Cria o item da lista
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><b>${dados.nome}</b> (Turma: ${dados.turma})</span>
+                    <button class="btn-expulsar" data-id="${id}">❌ Expulsar</button>
+                `;
+                lista.appendChild(li);
+            });
+
+            // Adiciona o evento de clique nos botões de expulsar
+            document.querySelectorAll('.btn-expulsar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idParaRemover = e.target.getAttribute('data-id');
+                    if(confirm("Tem certeza que deseja remover este aluno da partida?")) {
+                        remove(ref(db, 'jogadores/' + idParaRemover)); // Deleta do banco
+                    }
+                });
+            });
+        });
+
+        // 3. MOTOR DE MATEMÁTICA (Sem alterações)
         function gerarProblema() {
             const tipos = ['equacao', 'potencia', 'raiz'];
             const tipo = tipos[Math.floor(Math.random() * tipos.length)];
-            
             if(tipo === 'equacao') {
-                let a = Math.floor(Math.random() * 4) + 2; // 2 a 5
-                let x = Math.floor(Math.random() * 10) + 1; // 1 a 10
-                let b = Math.floor(Math.random() * 10) + 1; // 1 a 10
-                let c = (a * x) + b;
-                return { 
-                    pergunta: `Terreno à venda! Resolva a equação: ${a}x + ${b} = ${c}. Qual o valor de x?`, 
-                    resposta: x.toString(), 
-                    recompensa: 400 
-                };
+                let a = Math.floor(Math.random() * 4) + 2, x = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
+                return { pergunta: `Terreno à venda! Resolva: ${a}x + ${b} = ${(a * x) + b}. Qual o valor de x?`, resposta: x.toString(), recompensa: 400 };
             } else if (tipo === 'potencia') {
-                let base = Math.floor(Math.random() * 7) + 2; // 2 a 8
-                let exp = Math.floor(Math.random() * 2) + 2; // 2 ou 3
-                return { 
-                    pergunta: `Receita Federal! Pague ou ganhe o valor da potência: ${base} elevado a ${exp}. Qual é o resultado?`, 
-                    resposta: Math.pow(base, exp).toString(), 
-                    recompensa: 250 
-                };
+                let base = Math.floor(Math.random() * 7) + 2, exp = Math.floor(Math.random() * 2) + 2;
+                return { pergunta: `Receita Federal! Calcule a potência: ${base} elevado a ${exp}. Resultado?`, resposta: Math.pow(base, exp).toString(), recompensa: 250 };
             } else {
                 let raizes = [16, 25, 36, 49, 64, 81, 100, 121, 144];
-                let valor = raizes[Math.floor(Math.random() * raizes.length)];
-                let mult = (Math.floor(Math.random() * 4) + 1) * 10;
+                let valor = raizes[Math.floor(Math.random() * raizes.length)], mult = (Math.floor(Math.random() * 4) + 1) * 10;
                 let res = Math.sqrt(valor);
-                return { 
-                    pergunta: `Baú do tesouro! Você ganha a raiz quadrada de ${valor} multiplicada por ${mult}. Quanto ganhou?`, 
-                    resposta: (res * mult).toString(), 
-                    recompensa: (res * mult) 
-                };
+                return { pergunta: `Baú do tesouro! Ganhe a raiz de ${valor} multiplicada por ${mult}. Quanto ganhou?`, resposta: (res * mult).toString(), recompensa: (res * mult) };
             }
         }
 
         document.getElementById('btnLancarDesafio').addEventListener('click', () => {
             const desafio = gerarProblema();
-            
-            // Atualiza a tela do professor
             document.getElementById('desafioAtual').style.display = 'block';
             document.getElementById('textoPergunta').innerText = desafio.pergunta;
             document.getElementById('textoResposta').innerText = desafio.resposta;
             document.getElementById('textoRecompensa').innerText = desafio.recompensa;
-
-            // Envia para o Firebase (Isso vai disparar o alerta nos alunos!)
-            set(ref(db, 'rodadaAtual'), {
-                pergunta: desafio.pergunta,
-                resposta: desafio.resposta,
-                recompensa: desafio.recompensa,
-                vencedor: "", // Começa sem vencedor
-                ativa: true
-            });
+            set(ref(db, 'rodadaAtual'), { pergunta: desafio.pergunta, resposta: desafio.resposta, recompensa: desafio.recompensa, vencedor: "", ativa: true });
         });
     </script>
 </body>
