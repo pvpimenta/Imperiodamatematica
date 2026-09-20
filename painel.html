@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Professor - Império Matemático</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #1e3c72; color: white; text-align: center; padding: 50px; }
+        .painel { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; margin: 0 auto; max-width: 600px; }
+        button { background: #FFD700; border: none; padding: 20px; font-size: 24px; border-radius: 10px; font-family: 'Fredoka One'; cursor: pointer; color: #333; margin-top: 20px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        button:hover { background: #FFEA70; }
+        #desafioAtual { margin-top: 20px; font-size: 20px; background: #333; padding: 15px; border-radius: 10px; display: none;}
+    </style>
+</head>
+<body>
+    <div class="painel">
+        <h1>👨‍🏫 Controle do Jogo</h1>
+        <p>Clique abaixo para disparar um problema de Matemática para todos os alunos!</p>
+        
+        <button id="btnLancarDesafio">LANÇAR DESAFIO!</button>
+        
+        <div id="desafioAtual">
+            <h3 id="textoPergunta"></h3>
+            <p style="color: #4CAF50;">Resposta correta: <b id="textoResposta"></b></p>
+            <p>Recompensa: $ <span id="textoRecompensa"></span></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // SUA CONFIGURAÇÃO DO FIREBASE (já coloquei a sua aqui)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlwxaIIxETYSBGTtH1q6HMvXA62Cx9OLg",
+            authDomain: "imperiomatematico-8b227.firebaseapp.com",
+            databaseURL: "https://imperiomatematico-8b227-default-rtdb.firebaseio.com", 
+            projectId: "imperiomatematico-8b227",
+            storageBucket: "imperiomatematico-8b227.firebasestorage.app",
+            messagingSenderId: "806261301043",
+            appId: "1:806261301043:web:8d94c950247581f99de846"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // O MOTOR DE MATEMÁTICA
+        function gerarProblema() {
+            const tipos = ['equacao', 'potencia', 'raiz'];
+            const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+            
+            if(tipo === 'equacao') {
+                let a = Math.floor(Math.random() * 4) + 2; // 2 a 5
+                let x = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                let b = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                let c = (a * x) + b;
+                return { 
+                    pergunta: `Terreno à venda! Resolva a equação: ${a}x + ${b} = ${c}. Qual o valor de x?`, 
+                    resposta: x.toString(), 
+                    recompensa: 400 
+                };
+            } else if (tipo === 'potencia') {
+                let base = Math.floor(Math.random() * 7) + 2; // 2 a 8
+                let exp = Math.floor(Math.random() * 2) + 2; // 2 ou 3
+                return { 
+                    pergunta: `Receita Federal! Pague ou ganhe o valor da potência: ${base} elevado a ${exp}. Qual é o resultado?`, 
+                    resposta: Math.pow(base, exp).toString(), 
+                    recompensa: 250 
+                };
+            } else {
+                let raizes = [16, 25, 36, 49, 64, 81, 100, 121, 144];
+                let valor = raizes[Math.floor(Math.random() * raizes.length)];
+                let mult = (Math.floor(Math.random() * 4) + 1) * 10;
+                let res = Math.sqrt(valor);
+                return { 
+                    pergunta: `Baú do tesouro! Você ganha a raiz quadrada de ${valor} multiplicada por ${mult}. Quanto ganhou?`, 
+                    resposta: (res * mult).toString(), 
+                    recompensa: (res * mult) 
+                };
+            }
+        }
+
+        document.getElementById('btnLancarDesafio').addEventListener('click', () => {
+            const desafio = gerarProblema();
+            
+            // Atualiza a tela do professor
+            document.getElementById('desafioAtual').style.display = 'block';
+            document.getElementById('textoPergunta').innerText = desafio.pergunta;
+            document.getElementById('textoResposta').innerText = desafio.resposta;
+            document.getElementById('textoRecompensa').innerText = desafio.recompensa;
+
+            // Envia para o Firebase (Isso vai disparar o alerta nos alunos!)
+            set(ref(db, 'rodadaAtual'), {
+                pergunta: desafio.pergunta,
+                resposta: desafio.resposta,
+                recompensa: desafio.recompensa,
+                vencedor: "", // Começa sem vencedor
+                ativa: true
+            });
+        });
+    </script>
+</body>
+</html>
