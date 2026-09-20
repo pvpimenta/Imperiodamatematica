@@ -2,57 +2,79 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Professor - Império Matemático</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background: #1e3c72; color: white; text-align: center; padding: 20px; }
-        .caixa { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; margin: 20px auto; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        body { margin: 0; padding: 20px; font-family: 'Poppins', sans-serif; background: #1a1a2e; color: #fff; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-family: 'Fredoka One', cursive; color: #FFD700; text-align: center; font-size: 36px;}
+        .container { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; width: 90%; max-width: 800px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        input { width: 100%; padding: 10px; margin: 5px 0 15px; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: 'Fredoka One'; color: white; transition: 0.2s;}
+        .btn-lancar { background: #4CAF50; width: 100%; font-size: 20px; margin-top: 10px;}
+        .btn-lancar:hover { background: #45a049; }
+        .btn-perigo { background: #ff4757; }
+        .btn-perigo:hover { background: #ff6b81; }
         
-        input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; text-align: center; margin-bottom: 15px; width: 80%;}
-        .btn-acao { background: #FFD700; border: none; padding: 15px; font-size: 20px; border-radius: 10px; font-family: 'Fredoka One'; cursor: pointer; color: #333; width: 85%; }
-        .btn-acao:hover { background: #FFEA70; }
+        /* Lista de alunos */
+        .aluno-item { background: rgba(0,0,0,0.5); padding: 10px 15px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .dinheiro { color: #4CAF50; font-family: 'Fredoka One'; font-size: 18px; }
         
-        #telaControle, #desafioAtual { display: none; }
-        
-        /* Estilos da lista de alunos */
-        ul { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px;}
-        li { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
-        .btn-expulsar { background: #FF416C; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
-        .btn-expulsar:hover { background: #ff1a4d; }
+        #areaAdmin { display: none; width: 100%; display: flex; flex-direction: column; align-items: center;}
+        #loginBox { text-align: center; width: 100%; max-width: 400px; margin-top: 100px; }
+        .btn-login { background: #3498db; width: 100%; }
+
+        .grid-painel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1000px; }
+        @media(max-width: 768px) { .grid-painel { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    
-    <!-- TELA DE SENHA DO PROFESSOR -->
-    <div class="caixa" id="telaLogin">
-        <h1>🔒 Área Restrita</h1>
-        <p>Acesso exclusivo do professor</p>
-        <input type="password" id="senhaProf" placeholder="Digite a senha">
-        <br>
-        <button class="btn-acao" id="btnEntrarProf">ACESSAR PAINEL</button>
+
+    <!-- TELA DE SENHA -->
+    <div class="container" id="loginBox">
+        <h1>👨‍🏫 Acesso do Professor</h1>
+        <p>Digite a senha para acessar o controle do jogo.</p>
+        <input type="password" id="senhaProf" placeholder="Senha">
+        <button class="btn-login" id="btnEntrar">ACESSAR PAINEL</button>
     </div>
 
-    <!-- TELA DE CONTROLE DO JOGO -->
-    <div class="caixa" id="telaControle">
-        <h1>👨‍🏫 Controle do Jogo</h1>
+    <!-- PAINEL DE CONTROLE -->
+    <div id="areaAdmin" style="display: none;">
+        <h1>👑 Controle do Império</h1>
         
-        <button class="btn-acao" id="btnLancarDesafio" style="background: #4CAF50; color: white;">🚀 LANÇAR DESAFIO!</button>
-        
-        <div id="desafioAtual" style="margin-top: 15px; background: #333; padding: 15px; border-radius: 10px;">
-            <h3 id="textoPergunta"></h3>
-            <p style="color: #4CAF50;">Resposta: <b id="textoResposta"></b> (Prêmio: $ <span id="textoRecompensa"></span>)</p>
-        </div>
+        <div class="grid-painel">
+            <!-- COLUNA 1: Lançar Desafios -->
+            <div class="container">
+                <h2 style="color: #4CAF50; font-family: 'Fredoka One'; margin-top:0;">⚡ Lançar Novo Desafio</h2>
+                <label>Pergunta (Ex: Quanto é 8 x 7?)</label>
+                <input type="text" id="novaPergunta" placeholder="Digite a conta ou problema">
+                
+                <label>Resposta Correta (Ex: 56)</label>
+                <input type="number" id="novaResposta" placeholder="Apenas números">
+                
+                <label>Recompensa ($)</label>
+                <input type="number" id="novaRecompensa" placeholder="Ex: 500" value="500">
+                
+                <button class="btn-lancar" id="btnLancar">ENVIAR PARA OS ALUNOS!</button>
+                <p id="statusRodada" style="text-align: center; color: #FFD700; font-weight: bold; margin-top: 15px;"></p>
+            </div>
 
-        <h3 style="margin-top: 30px;">Gerenciar Alunos (Sala de Espera)</h3>
-        <ul id="listaAlunosProf">
-            <!-- Alunos aparecerão aqui -->
-        </ul>
+            <!-- COLUNA 2: Gestão da Sala -->
+            <div class="container">
+                <h2 style="color: #3498db; font-family: 'Fredoka One'; margin-top:0;">👥 Sala de Aula</h2>
+                <button class="btn-perigo" id="btnZerarSala" style="width: 100%; margin-bottom: 15px;">Zerar Sala (Apagar Todos)</button>
+                <div id="listaAlunosAdmin">
+                    <!-- Alunos aparecem aqui -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
+        // MESMA CHAVE DO INDEX.HTML
         const firebaseConfig = {
             apiKey: "AIzaSyAlwxaIIxETYSBGTtH1q6HMvXA62Cx9OLg",
             authDomain: "imperiomatematico-8b227.firebaseapp.com",
@@ -65,73 +87,78 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 1. SISTEMA DE LOGIN DO PROFESSOR (Senha padrão: profe123)
-        const SENHA_CORRETA = "profe123"; 
-
-        document.getElementById('btnEntrarProf').addEventListener('click', () => {
-            const senhaDigitada = document.getElementById('senhaProf').value;
-            if(senhaDigitada === SENHA_CORRETA) {
-                document.getElementById('telaLogin').style.display = 'none';
-                document.getElementById('telaControle').style.display = 'block';
+        // LOGIN SIMPLES (Senha padrão: prof123)
+        document.getElementById('btnEntrar').addEventListener('click', () => {
+            const senha = document.getElementById('senhaProf').value;
+            if(senha === "prof123") {
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('areaAdmin').style.display = 'flex';
             } else {
                 alert("Senha incorreta!");
             }
         });
 
-        // 2. LISTAR E EXPULSAR ALUNOS
-        onValue(ref(db, 'jogadores'), (snapshot) => {
-            const lista = document.getElementById('listaAlunosProf');
-            lista.innerHTML = '';
-            
-            snapshot.forEach((childSnapshot) => {
-                const id = childSnapshot.key;
-                const dados = childSnapshot.val();
-                
-                // Cria o item da lista
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span><b>${dados.nome}</b> (Turma: ${dados.turma})</span>
-                    <button class="btn-expulsar" data-id="${id}">❌ Expulsar</button>
-                `;
-                lista.appendChild(li);
-            });
+        // LANÇAR RODADA
+        document.getElementById('btnLancar').addEventListener('click', () => {
+            const pergunta = document.getElementById('novaPergunta').value;
+            const resposta = document.getElementById('novaResposta').value;
+            const recompensa = parseInt(document.getElementById('novaRecompensa').value);
 
-            // Adiciona o evento de clique nos botões de expulsar
-            document.querySelectorAll('.btn-expulsar').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idParaRemover = e.target.getAttribute('data-id');
-                    if(confirm("Tem certeza que deseja remover este aluno da partida?")) {
-                        remove(ref(db, 'jogadores/' + idParaRemover)); // Deleta do banco
-                    }
+            if(pergunta && resposta && recompensa) {
+                set(ref(db, 'rodadaAtual'), {
+                    pergunta: pergunta,
+                    resposta: resposta,
+                    recompensa: recompensa,
+                    ativa: true,
+                    vencedor: ""
                 });
-            });
+                document.getElementById('statusRodada').innerText = "Desafio na tela dos alunos! Aguardando resposta...";
+            } else {
+                alert("Preencha todos os campos do desafio.");
+            }
         });
 
-        // 3. MOTOR DE MATEMÁTICA (Sem alterações)
-        function gerarProblema() {
-            const tipos = ['equacao', 'potencia', 'raiz'];
-            const tipo = tipos[Math.floor(Math.random() * tipos.length)];
-            if(tipo === 'equacao') {
-                let a = Math.floor(Math.random() * 4) + 2, x = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
-                return { pergunta: `Terreno à venda! Resolva: ${a}x + ${b} = ${(a * x) + b}. Qual o valor de x?`, resposta: x.toString(), recompensa: 400 };
-            } else if (tipo === 'potencia') {
-                let base = Math.floor(Math.random() * 7) + 2, exp = Math.floor(Math.random() * 2) + 2;
-                return { pergunta: `Receita Federal! Calcule a potência: ${base} elevado a ${exp}. Resultado?`, resposta: Math.pow(base, exp).toString(), recompensa: 250 };
+        // MONITORAR QUEM VENCEU
+        onValue(ref(db, 'rodadaAtual'), (snapshot) => {
+            const rodada = snapshot.val();
+            if(rodada && rodada.vencedor !== "") {
+                document.getElementById('statusRodada').innerHTML = `O aluno <b style='color:#4CAF50'>${rodada.vencedor}</b> foi o mais rápido!`;
+            }
+        });
+
+        // MONITORAR ALUNOS E BOTÃO DE EXPULSAR
+        onValue(ref(db, 'jogadores'), (snapshot) => {
+            const lista = document.getElementById('listaAlunosAdmin');
+            lista.innerHTML = '';
+            const dados = snapshot.val();
+            
+            if (dados) {
+                Object.entries(dados).forEach(([id, j]) => {
+                    lista.innerHTML += `
+                    <div class="aluno-item">
+                        <div><b>${j.nome}</b> (${j.turma}) <br> <span class="dinheiro">$ ${j.dinheiro}</span></div>
+                        <button class="btn-perigo" style="padding: 5px 10px; font-size: 12px;" onclick="expulsarAluno('${id}')">X</button>
+                    </div>`;
+                });
             } else {
-                let raizes = [16, 25, 36, 49, 64, 81, 100, 121, 144];
-                let valor = raizes[Math.floor(Math.random() * raizes.length)], mult = (Math.floor(Math.random() * 4) + 1) * 10;
-                let res = Math.sqrt(valor);
-                return { pergunta: `Baú do tesouro! Ganhe a raiz de ${valor} multiplicada por ${mult}. Quanto ganhou?`, resposta: (res * mult).toString(), recompensa: (res * mult) };
+                lista.innerHTML = '<p>Nenhum aluno na sala.</p>';
+            }
+        });
+
+        // FUNÇÃO DE EXPULSAR (Fica na janela para o HTML enxergar)
+        window.expulsarAluno = function(id) {
+            if(confirm("Tem certeza que deseja remover este aluno?")) {
+                remove(ref(db, 'jogadores/' + id));
             }
         }
 
-        document.getElementById('btnLancarDesafio').addEventListener('click', () => {
-            const desafio = gerarProblema();
-            document.getElementById('desafioAtual').style.display = 'block';
-            document.getElementById('textoPergunta').innerText = desafio.pergunta;
-            document.getElementById('textoResposta').innerText = desafio.resposta;
-            document.getElementById('textoRecompensa').innerText = desafio.recompensa;
-            set(ref(db, 'rodadaAtual'), { pergunta: desafio.pergunta, resposta: desafio.resposta, recompensa: desafio.recompensa, vencedor: "", ativa: true });
+        // ZERAR A SALA
+        document.getElementById('btnZerarSala').addEventListener('click', () => {
+            if(confirm("ATENÇÃO: Isso vai apagar todos os alunos e reiniciar o jogo. Tem certeza?")) {
+                remove(ref(db, 'jogadores'));
+                remove(ref(db, 'rodadaAtual'));
+                document.getElementById('statusRodada').innerText = "Sala zerada. Pronta para a próxima turma!";
+            }
         });
     </script>
 </body>
