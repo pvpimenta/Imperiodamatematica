@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Império Matemático</title>
     <style>
-        /* Estilo Gamificado e Engajador */
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
 
         body {
@@ -13,15 +12,14 @@
             padding: 0;
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: #fff;
-            overflow: hidden;
         }
 
-        .login-box {
+        .container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             padding: 40px;
@@ -29,14 +27,8 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
             text-align: center;
             box-shadow: 0 15px 25px rgba(0,0,0,0.2);
-            width: 300px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            width: 350px;
+            transition: all 0.5s ease;
         }
 
         h1 {
@@ -45,11 +37,6 @@
             margin-bottom: 5px;
             color: #FFD700;
             text-shadow: 2px 2px 0px #FF8C00, 4px 4px 0px #000;
-        }
-
-        p {
-            font-size: 14px;
-            margin-bottom: 25px;
         }
 
         input {
@@ -61,11 +48,6 @@
             font-size: 16px;
             font-family: 'Poppins', sans-serif;
             text-align: center;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
-        }
-
-        input:focus {
-            outline: 2px solid #FFD700;
         }
 
         button {
@@ -79,48 +61,141 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
-            transition: transform 0.1s, box-shadow 0.1s;
             font-family: 'Fredoka One', cursive;
             margin-top: 15px;
         }
 
-        button:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 5px rgba(255, 75, 43, 0.4);
+        button:hover { filter: brightness(1.1); }
+
+        /* Estilos do Ranking */
+        #rankingBox {
+            display: none; /* Escondido até o login */
+            width: 400px;
         }
 
-        button:hover {
-            filter: brightness(1.1);
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .jogador-item {
+            background: rgba(0, 0, 0, 0.3);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            border-left: 5px solid #FFD700;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .jogador-info { text-align: left; }
+        .jogador-nome { font-size: 18px; color: #FFD700; }
+        .jogador-turma { font-size: 12px; color: #ccc; }
+        .jogador-dinheiro { font-size: 20px; font-family: 'Fredoka One', cursive; color: #4CAF50; }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
+    <!-- TELA DE LOGIN -->
+    <div class="container" id="loginBox">
         <h1>🎲 Império<br>Matemático</h1>
         <p>Prepare-se para calcular e conquistar!</p>
-        
-        <input type="text" id="nomeAluno" placeholder="Seu Nome ou Apelido" required>
+        <input type="text" id="nomeAluno" placeholder="Seu Nome" required>
         <input type="text" id="turmaAluno" placeholder="Sua Turma (ex: 7A)" required>
-        
-        <button onclick="entrarNoJogo()">ENTRAR NO JOGO!</button>
+        <button id="btnEntrar">ENTRAR NO JOGO!</button>
     </div>
 
-    <!-- Aqui entrará o Firebase na próxima etapa -->
-    <script>
-        function entrarNoJogo() {
-            const nome = document.getElementById('nomeAluno').value;
-            const turma = document.getElementById('turmaAluno').value;
+    <!-- TELA DE RANKING (SALA DE ESPERA) -->
+    <div class="container" id="rankingBox">
+        <h1>🏆 Sala de Espera</h1>
+        <p>Aguardando os jogadores...</p>
+        <ul class="ranking-list" id="listaJogadores">
+            <!-- Os jogadores vão aparecer aqui dinamicamente -->
+        </ul>
+        <button style="background: linear-gradient(45deg, #00b09b, #96c93d);">INICIAR PARTIDA</button>
+    </div>
+
+    <!-- SCRIPT DO FIREBASE (Usando módulos do navegador) -->
+    <script type="module">
+        // 1. Importando as funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // 2. Sua Configuração (Adicionei a databaseURL que é exigida no Realtime DB)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlwxaIIxETYSBGTtH1q6HMvXA62Cx9OLg",
+            authDomain: "imperiomatematico-8b227.firebaseapp.com",
+            databaseURL: "https://imperiomatematico-8b227-default-rtdb.firebaseio.com", 
+            projectId: "imperiomatematico-8b227",
+            storageBucket: "imperiomatematico-8b227.firebasestorage.app",
+            messagingSenderId: "806261301043",
+            appId: "1:806261301043:web:8d94c950247581f99de846"
+        };
+
+        // 3. Inicializando
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const jogadoresRef = ref(db, 'jogadores');
+
+        // 4. Lógica de entrar no jogo
+        document.getElementById('btnEntrar').addEventListener('click', () => {
+            const nome = document.getElementById('nomeAluno').value.trim();
+            const turma = document.getElementById('turmaAluno').value.trim();
 
             if(nome && turma) {
-                // Efeito sonoro e animação entrariam aqui
-                alert(`Bem-vindo, ${nome} da turma ${turma}! Conectando ao servidor...`);
-                // Na próxima etapa, esse botão vai mandar os dados pro Firebase!
-            } else {
-                alert("Preencha seu nome e turma para jogar!");
-            }
-        }
-    </script>
+                // Salva o aluno no banco de dados com $ 1500 iniciais
+                push(jogadoresRef, {
+                    nome: nome,
+                    turma: turma,
+                    dinheiro: 1500,
+                    patrimonio: 1500,
+                    posicaoTabuleiro: 0
+                });
 
+                // Esconde login e mostra ranking
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('rankingBox').style.display = 'block';
+            } else {
+                alert("Preencha nome e turma!");
+            }
+        });
+
+        // 5. Escutando o banco em tempo real para atualizar o ranking
+        onValue(jogadoresRef, (snapshot) => {
+            const lista = document.getElementById('listaJogadores');
+            lista.innerHTML = ''; // Limpa a lista antes de atualizar
+
+            const dados = snapshot.val();
+            if (dados) {
+                // Converte objeto em array para poder ordenar por dinheiro
+                const arrayJogadores = Object.values(dados);
+                arrayJogadores.sort((a, b) => b.dinheiro - a.dinheiro);
+
+                // Cria o visual de cada jogador na tela
+                arrayJogadores.forEach(jogador => {
+                    lista.innerHTML += `
+                        <li class="jogador-item">
+                            <div class="jogador-info">
+                                <div class="jogador-nome">${jogador.nome}</div>
+                                <div class="jogador-turma">Turma: ${jogador.turma}</div>
+                            </div>
+                            <div class="jogador-dinheiro">$ ${jogador.dinheiro}</div>
+                        </li>
+                    `;
+                });
+            }
+        });
+    </script>
 </body>
 </html>
