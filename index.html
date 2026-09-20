@@ -28,6 +28,32 @@
 <body>
 
     <!-- TELA LOGIN -->
+    // LOGIN
+        document.getElementById('btnEntrar').addEventListener('click', () => {
+            meuNome = document.getElementById('nomeAluno').value.trim();
+            const turma = document.getElementById('turmaAluno').value.trim();
+            if(meuNome && turma) {
+                const novoJogador = push(ref(db, 'jogadores'));
+                meuId = novoJogador.key; // Salva o ID deste aluno
+                set(novoJogador, { nome: meuNome, turma: turma, dinheiro: 1500 });
+
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('rankingBox').style.display = 'block';
+
+                // ==========================================
+                // NOVO: RADAR DE EXPULSÃO
+                // O celular do aluno fica vigiando a própria conta no banco
+                const meuRef = ref(db, 'jogadores/' + meuId);
+                onValue(meuRef, (snapshot) => {
+                    // Se o professor deletar a conta, o snapshot não existe mais
+                    if (!snapshot.exists()) {
+                        alert("Você foi removido da partida pelo professor.");
+                        window.location.reload(); // Atualiza a página e volta pro login
+                    }
+                });
+                // ==========================================
+            }
+        });
     <div class="container" id="loginBox">
         <h1>🎲 Império<br>Matemático</h1>
         <input type="text" id="nomeAluno" placeholder="Seu Nome" required>
