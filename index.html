@@ -28,32 +28,6 @@
 <body>
 
     <!-- TELA LOGIN -->
-    // LOGIN
-        document.getElementById('btnEntrar').addEventListener('click', () => {
-            meuNome = document.getElementById('nomeAluno').value.trim();
-            const turma = document.getElementById('turmaAluno').value.trim();
-            if(meuNome && turma) {
-                const novoJogador = push(ref(db, 'jogadores'));
-                meuId = novoJogador.key; // Salva o ID deste aluno
-                set(novoJogador, { nome: meuNome, turma: turma, dinheiro: 1500 });
-
-                document.getElementById('loginBox').style.display = 'none';
-                document.getElementById('rankingBox').style.display = 'block';
-
-                // ==========================================
-                // NOVO: RADAR DE EXPULSÃO
-                // O celular do aluno fica vigiando a própria conta no banco
-                const meuRef = ref(db, 'jogadores/' + meuId);
-                onValue(meuRef, (snapshot) => {
-                    // Se o professor deletar a conta, o snapshot não existe mais
-                    if (!snapshot.exists()) {
-                        alert("Você foi removido da partida pelo professor.");
-                        window.location.reload(); // Atualiza a página e volta pro login
-                    }
-                });
-                // ==========================================
-            }
-        });
     <div class="container" id="loginBox">
         <h1>🎲 Império<br>Matemático</h1>
         <input type="text" id="nomeAluno" placeholder="Seu Nome" required>
@@ -108,6 +82,15 @@
 
                 document.getElementById('loginBox').style.display = 'none';
                 document.getElementById('rankingBox').style.display = 'block';
+
+                // NOVO: RADAR DE EXPULSÃO
+                const meuRef = ref(db, 'jogadores/' + meuId);
+                onValue(meuRef, (snapshot) => {
+                    if (!snapshot.exists()) {
+                        alert("Você foi removido da partida pelo professor.");
+                        window.location.reload(); 
+                    }
+                });
             }
         });
 
@@ -128,7 +111,7 @@
             }
         });
 
-        // OUVINTE DA RODADA (A Mágica da Gritaria!)
+        // OUVINTE DA RODADA
         let respostaCertaDaRodada = "";
         let recompensaDaRodada = 0;
 
@@ -138,24 +121,20 @@
 
             const modal = document.getElementById('modalDesafio');
             
-            // Se a rodada está ativa e não tem vencedor, mostra a tela para todos
             if(rodada.ativa && rodada.vencedor === "") {
                 document.getElementById('perguntaTexto').innerText = rodada.pergunta;
                 respostaCertaDaRodada = rodada.resposta;
                 recompensaDaRodada = rodada.recompensa;
                 document.getElementById('respostaAluno').value = "";
                 document.getElementById('feedbackResp').innerText = "";
-                modal.style.display = "flex"; // Pula na tela!
+                modal.style.display = "flex"; 
             } 
-            // Se alguém já ganhou
             else if (rodada.vencedor !== "") {
                 if (rodada.vencedor === meuNome) {
                     document.getElementById('perguntaTexto').innerHTML = `<span style='color:green; font-size:24px'>🏆 VOCÊ VENCEU A RODADA!</span>`;
                 } else {
                     document.getElementById('perguntaTexto').innerHTML = `<span style='color:red;'>O aluno <b>${rodada.vencedor}</b> foi mais rápido!</span>`;
                 }
-                
-                // Fecha a tela depois de 3 segundos
                 setTimeout(() => { modal.style.display = "none"; }, 3500);
             }
         });
@@ -169,16 +148,13 @@
                 feedback.style.color = "green";
                 feedback.innerText = "Resposta Certa! Verificando se você foi o primeiro...";
                 
-                // Checa no banco se alguém já não respondeu antes (milissegundos importam!)
                 const rodadaRef = ref(db, 'rodadaAtual');
                 const snap = await get(rodadaRef);
                 const dadosAtuais = snap.val();
 
                 if(dadosAtuais.vencedor === "") {
-                    // VOCÊ FOI O PRIMEIRO! Salva que você ganhou.
                     update(rodadaRef, { vencedor: meuNome, ativa: false });
                     
-                    // Adiciona o dinheiro na sua conta
                     const meuRef = ref(db, 'jogadores/' + meuId);
                     const snapMim = await get(meuRef);
                     const meuDinheiroAtual = snapMim.val().dinheiro;
