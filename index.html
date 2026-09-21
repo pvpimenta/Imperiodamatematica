@@ -3,166 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Império Matemático</title>
+    <title>Império Matemático - O Tabuleiro</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
-        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: #fff; }
-        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2); text-align: center; box-shadow: 0 15px 25px rgba(0,0,0,0.2); width: 350px; }
-        h1 { font-family: 'Fredoka One', cursive; font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #FF8C00, 4px 4px 0px #000; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px; text-align: center; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 10px; background: linear-gradient(45deg, #FF416C, #FF4B2B); color: white; font-size: 18px; font-weight: bold; cursor: pointer; font-family: 'Fredoka One'; margin-top: 15px; }
-        button:hover { filter: brightness(1.1); }
+        body { margin: 0; padding: 20px; font-family: 'Poppins', sans-serif; background: #1e3c72; color: #fff; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-family: 'Fredoka One', cursive; font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #FF8C00; margin: 10px 0; text-align: center;}
         
-        #rankingBox { display: none; width: 400px; }
-        .ranking-list { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; margin-top: 20px; }
-        .jogador-item { background: rgba(0, 0, 0, 0.3); margin: 10px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; border-left: 5px solid #FFD700; }
+        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; text-align: center; width: 100%; max-width: 400px; margin-bottom: 20px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; text-align: center; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, #FF416C, #FF4B2B); color: white; font-size: 18px; font-weight: bold; cursor: pointer; font-family: 'Fredoka One'; margin-top: 10px; }
         
-        /* Estilos do Desafio (Pop-up) */
-        #modalDesafio { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
-        .desafio-caixa { background: #fff; color: #333; padding: 30px; border-radius: 20px; width: 80%; max-width: 400px; text-align: center; box-shadow: 0 0 30px #FFD700; }
-        .desafio-caixa h2 { font-family: 'Fredoka One'; color: #FF416C; font-size: 28px; }
-        #perguntaTexto { font-size: 18px; font-weight: bold; margin: 20px 0; }
-        #feedbackResp { font-weight: bold; margin-top: 10px; color: red; }
+        /* O TABULEIRO (A Trilha) */
+        #areaJogo { display: none; width: 100%; max-width: 800px; }
+        .trilha { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
+        .casa { background: white; color: #333; width: 80px; height: 80px; border-radius: 10px; border: 3px solid #333; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; font-size: 12px; font-weight: bold; padding: 5px; position: relative; }
+        .casa-inicio { background: #FFD700; }
+        
+        /* Os Jogadores no Tabuleiro */
+        .peao { background: #4CAF50; color: white; padding: 2px 5px; border-radius: 5px; font-size: 10px; margin-top: 2px; width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        
+        /* O Dado */
+        .area-dado { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        #resultadoDado { font-size: 40px; font-family: 'Fredoka One'; margin: 10px 0; color: #FFD700; }
     </style>
 </head>
 <body>
 
-    <!-- TELA LOGIN -->
+    <!-- TELA DE LOGIN -->
     <div class="container" id="loginBox">
-        <h1>🎲 Império<br>Matemático</h1>
+        <h1>🎲 Império Matemático</h1>
+        <p>Bem-vindo ao Tabuleiro!</p>
         <input type="text" id="nomeAluno" placeholder="Seu Nome" required>
-        <input type="text" id="turmaAluno" placeholder="Sua Turma (ex: 7A)" required>
-        <button id="btnEntrar">ENTRAR NO JOGO!</button>
+        <button id="btnEntrar">ENTRAR NO JOGO</button>
     </div>
 
-    <!-- TELA RANKING -->
-    <div class="container" id="rankingBox">
-        <h1>🏆 Ranking Ao Vivo</h1>
-        <ul class="ranking-list" id="listaJogadores"></ul>
-    </div>
+    <!-- TELA DO TABULEIRO -->
+    <div id="areaJogo">
+        <div class="area-dado">
+            <div style="font-size: 18px;">Seu Dinheiro: <b id="meuDinheiroTexto" style="color:#4CAF50;">$1500</b></div>
+            <div id="resultadoDado">🎲</div>
+            <button id="btnRolarDado">JOGAR O DADO</button>
+        </div>
 
-    <!-- MODAL DO DESAFIO (Escondido até o professor lançar) -->
-    <div id="modalDesafio">
-        <div class="desafio-caixa">
-            <h2>🚨 DESAFIO RÁPIDO!</h2>
-            <p id="perguntaTexto">Aguardando professor...</p>
-            <input type="number" id="respostaAluno" placeholder="Digite o resultado">
-            <button id="btnResponder">RESPONDER</button>
-            <p id="feedbackResp"></p>
+        <h2 style="text-align: center; font-family: 'Fredoka One';">A Trilha</h2>
+        <div class="trilha" id="tabuleiroHTML">
+            <!-- As casas serão geradas pelo JavaScript -->
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlwxaIIxETYSBGTtH1q6HMvXA62Cx9OLg",
             authDomain: "imperiomatematico-8b227.firebaseapp.com",
             databaseURL: "https://imperiomatematico-8b227-default-rtdb.firebaseio.com", 
-            projectId: "imperiomatematico-8b227",
-            storageBucket: "imperiomatematico-8b227.firebasestorage.app",
-            messagingSenderId: "806261301043",
-            appId: "1:806261301043:web:8d94c950247581f99de846"
+            projectId: "imperiomatematico-8b227"
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
         let meuId = null;
         let meuNome = "";
+        let minhaPosicao = 0;
+        const totalCasas = 16; // Um tabuleiro circular simples com 16 casas
+
+        // GERAR O TABULEIRO VISUAL
+        const tabuleiroHTML = document.getElementById('tabuleiroHTML');
+        for(let i = 0; i < totalCasas; i++) {
+            let nomeCasa = i === 0 ? "INÍCIO" : `Propriedade ${i}`;
+            let classeExtra = i === 0 ? "casa-inicio" : "";
+            tabuleiroHTML.innerHTML += `<div class="casa ${classeExtra}" id="casa-${i}">${nomeCasa}</div>`;
+        }
 
         // LOGIN
         document.getElementById('btnEntrar').addEventListener('click', () => {
             meuNome = document.getElementById('nomeAluno').value.trim();
-            const turma = document.getElementById('turmaAluno').value.trim();
-            if(meuNome && turma) {
+            if(meuNome) {
                 const novoJogador = push(ref(db, 'jogadores'));
-                meuId = novoJogador.key; // Salva o ID deste aluno
-                set(novoJogador, { nome: meuNome, turma: turma, dinheiro: 1500 });
+                meuId = novoJogador.key;
+                
+                // Agora o jogador tem POSIÇÃO
+                set(novoJogador, { nome: meuNome, dinheiro: 1500, posicao: 0 });
 
                 document.getElementById('loginBox').style.display = 'none';
-                document.getElementById('rankingBox').style.display = 'block';
-
-                // NOVO: RADAR DE EXPULSÃO
-                const meuRef = ref(db, 'jogadores/' + meuId);
-                onValue(meuRef, (snapshot) => {
-                    if (!snapshot.exists()) {
-                        alert("Você foi removido da partida pelo professor.");
-                        window.location.reload(); 
-                    }
-                });
+                document.getElementById('areaJogo').style.display = 'block';
             }
         });
 
-        // ATUALIZA RANKING
+        // ROLAR O DADO
+        document.getElementById('btnRolarDado').addEventListener('click', () => {
+            // Sorteia um número de 1 a 6
+            const dado = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('resultadoDado').innerText = `🎲 ${dado}`;
+            
+            // Calcula a nova posição (dá a volta no tabuleiro se passar da última casa)
+            minhaPosicao = (minhaPosicao + dado) % totalCasas;
+            
+            // Atualiza no banco de dados para todo mundo ver
+            update(ref(db, 'jogadores/' + meuId), { posicao: minhaPosicao });
+        });
+
+        // DESENHAR OS JOGADORES NO TABULEIRO EM TEMPO REAL
         onValue(ref(db, 'jogadores'), (snapshot) => {
-            const lista = document.getElementById('listaJogadores');
-            lista.innerHTML = '';
+            // 1. Limpa todos os peões do tabuleiro primeiro
+            for(let i = 0; i < totalCasas; i++) {
+                const casaDiv = document.getElementById(`casa-${i}`);
+                // Mantém apenas o texto original da casa (removendo as divs de peão)
+                const textoCasa = i === 0 ? "INÍCIO" : `Propriedade ${i}`;
+                casaDiv.innerHTML = textoCasa; 
+            }
+
             const dados = snapshot.val();
             if (dados) {
-                const arrayJogadores = Object.values(dados);
-                arrayJogadores.sort((a, b) => b.dinheiro - a.dinheiro); // Quem tem mais fica no topo
-                arrayJogadores.forEach(j => {
-                    lista.innerHTML += `<li class="jogador-item">
-                        <div><b>${j.nome}</b> (${j.turma})</div>
-                        <div style="color: #4CAF50; font-family:'Fredoka One';">$ ${j.dinheiro}</div>
-                    </li>`;
+                Object.entries(dados).forEach(([id, j]) => {
+                    // Atualiza meu próprio dinheiro na tela
+                    if(id === meuId) {
+                        document.getElementById('meuDinheiroTexto').innerText = `$${j.dinheiro}`;
+                    }
+
+                    // Coloca o "peão" (nome do jogador) na casa correspondente
+                    const casaAtual = document.getElementById(`casa-${j.posicao}`);
+                    if(casaAtual) {
+                        casaAtual.innerHTML += `<div class="peao">${j.nome}</div>`;
+                    }
                 });
-            }
-        });
-
-        // OUVINTE DA RODADA
-        let respostaCertaDaRodada = "";
-        let recompensaDaRodada = 0;
-
-        onValue(ref(db, 'rodadaAtual'), (snapshot) => {
-            const rodada = snapshot.val();
-            if(!rodada) return;
-
-            const modal = document.getElementById('modalDesafio');
-            
-            if(rodada.ativa && rodada.vencedor === "") {
-                document.getElementById('perguntaTexto').innerText = rodada.pergunta;
-                respostaCertaDaRodada = rodada.resposta;
-                recompensaDaRodada = rodada.recompensa;
-                document.getElementById('respostaAluno').value = "";
-                document.getElementById('feedbackResp').innerText = "";
-                modal.style.display = "flex"; 
-            } 
-            else if (rodada.vencedor !== "") {
-                if (rodada.vencedor === meuNome) {
-                    document.getElementById('perguntaTexto').innerHTML = `<span style='color:green; font-size:24px'>🏆 VOCÊ VENCEU A RODADA!</span>`;
-                } else {
-                    document.getElementById('perguntaTexto').innerHTML = `<span style='color:red;'>O aluno <b>${rodada.vencedor}</b> foi mais rápido!</span>`;
-                }
-                setTimeout(() => { modal.style.display = "none"; }, 3500);
-            }
-        });
-
-        // ENVIAR RESPOSTA
-        document.getElementById('btnResponder').addEventListener('click', async () => {
-            const palpite = document.getElementById('respostaAluno').value;
-            const feedback = document.getElementById('feedbackResp');
-
-            if(palpite === respostaCertaDaRodada) {
-                feedback.style.color = "green";
-                feedback.innerText = "Resposta Certa! Verificando se você foi o primeiro...";
-                
-                const rodadaRef = ref(db, 'rodadaAtual');
-                const snap = await get(rodadaRef);
-                const dadosAtuais = snap.val();
-
-                if(dadosAtuais.vencedor === "") {
-                    update(rodadaRef, { vencedor: meuNome, ativa: false });
-                    
-                    const meuRef = ref(db, 'jogadores/' + meuId);
-                    const snapMim = await get(meuRef);
-                    const meuDinheiroAtual = snapMim.val().dinheiro;
-                    update(meuRef, { dinheiro: meuDinheiroAtual + recompensaDaRodada });
-                }
-            } else {
-                feedback.style.color = "red";
-                feedback.innerText = "Resposta Errada! Tente novamente rápido!";
             }
         });
     </script>
